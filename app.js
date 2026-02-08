@@ -114,8 +114,50 @@ function render() {
 
   exercisesList.innerHTML = workout.exercises.map((ex, index) => {
     const exerciseKey = `${currentState.globalDay}_${index}`;
-    const lastWeight = getLastWeight(ex.name);
     const currentWeight = log[exerciseKey]?.weight || '';
+
+    // Calculate suggested weight for weight-based exercises
+    const suggestedWeight = ex.uses_weight
+      ? getSuggestedWeight(ex.name, ex.starting_weight, ex.weight_increment || 5)
+      : null;
+    const increment = ex.weight_increment || 5;
+
+    // Build weight input section
+    let weightSection = '';
+    if (ex.uses_weight) {
+      weightSection = `
+        <div class="weight-input">
+          <label>Weight:</label>
+          <div class="weight-controls">
+            <button class="weight-btn" data-action="decrement" data-key="${exerciseKey}" data-increment="${increment}">-</button>
+            <input type="number"
+                   class="weight-field"
+                   data-exercise="${ex.name}"
+                   data-key="${exerciseKey}"
+                   value="${currentWeight}"
+                   placeholder="${suggestedWeight}">
+            <button class="weight-btn" data-action="increment" data-key="${exerciseKey}" data-increment="${increment}">+</button>
+          </div>
+          <span class="unit">lbs</span>
+          <span class="suggested-hint">suggested: ${suggestedWeight}</span>
+        </div>
+      `;
+    } else if (ex.uses_weight !== false) {
+      // Legacy exercises without uses_weight defined - show basic input
+      const lastWeight = getLastWeight(ex.name);
+      weightSection = `
+        <div class="weight-input">
+          <label>Weight:</label>
+          <input type="number"
+                 class="weight-field"
+                 data-exercise="${ex.name}"
+                 data-key="${exerciseKey}"
+                 value="${currentWeight}"
+                 placeholder="${lastWeight || '—'}">
+          <span class="unit">lbs</span>
+        </div>
+      `;
+    }
 
     return `
       <div class="exercise" data-index="${index}">
@@ -129,16 +171,7 @@ function render() {
           <span><strong>${ex.rest}</strong> rest</span>
         </div>
         ${ex.note ? `<div class="exercise-note">${ex.note}</div>` : ''}
-        <div class="weight-input">
-          <label>Weight:</label>
-          <input type="number"
-                 class="weight-field"
-                 data-exercise="${ex.name}"
-                 data-key="${exerciseKey}"
-                 value="${currentWeight}"
-                 placeholder="${lastWeight || '—'}">
-          <span class="unit">lbs</span>
-        </div>
+        ${weightSection}
       </div>
     `;
   }).join('');
@@ -158,6 +191,61 @@ function getLastWeight(exerciseName) {
   }
 
   return lastWeight;
+}
+
+// Get suggested weight with weekly progression logic
+function getSuggestedWeight(exerciseName, startingWeight, increment = 5) {
+  const log = loadLog();
+  const currentWeek = Math.floor((currentState.globalDay - 1) / 7) + 1;
+
+  // Find last logged weight for this exercise
+  let lastEntry = null;
+  for (const key in log) {
+    if (log[key].exercise === exerciseName) {
+      if (!lastEntry || log[key].timestamp > lastEntry.timestamp) {
+        lastEntry = log[key];
+      }
+    }
+  }
+
+  if (!lastEntry) {
+    return startingWeight; // First time - use starting weight
+  }
+
+  const lastWeek = Math.floor((lastEntry.day - 1) / 7) + 1;
+
+  if (currentWeek > lastWeek) {
+    // New week - suggest progression
+    return Math.min(lastEntry.weight + increment, 80); // Cap at 80lbs
+  }
+
+  return lastEntry.weight; // Same week - same weight
+}
+
+// Increment weight for an exercise
+function incrementWeight(exerciseKey, increment = 5) {
+  const input = document.querySelector(`input[data-key="${exerciseKey}"]`);
+  if (!input) return;
+
+  let currentValue = parseFloat(input.value) || parseFloat(input.placeholder) || 5;
+  const newValue = Math.min(currentValue + increment, 80); // Cap at 80lbs
+  input.value = newValue;
+
+  // Trigger save
+  saveWeightInput(input);
+}
+
+// Decrement weight for an exercise
+function decrementWeight(exerciseKey, increment = 5) {
+  const input = document.querySelector(`input[data-key="${exerciseKey}"]`);
+  if (!input) return;
+
+  let currentValue = parseFloat(input.value) || parseFloat(input.placeholder) || 10;
+  const newValue = Math.max(currentValue - increment, 5); // Min 5lbs
+  input.value = newValue;
+
+  // Trigger save
+  saveWeightInput(input);
 }
 
 // Bind event listeners
@@ -185,6 +273,21 @@ function bindEvents() {
   document.getElementById('exercises-list').addEventListener('input', (e) => {
     if (e.target.classList.contains('weight-field')) {
       saveWeightInput(e.target);
+    }
+  });
+
+  // Weight +/- buttons (delegated)
+  document.getElementById('exercises-list').addEventListener('click', (e) => {
+    if (e.target.classList.contains('weight-btn')) {
+      const action = e.target.dataset.action;
+      const key = e.target.dataset.key;
+      const increment = parseInt(e.target.dataset.increment) || 5;
+
+      if (action === 'increment') {
+        incrementWeight(key, increment);
+      } else if (action === 'decrement') {
+        decrementWeight(key, increment);
+      }
     }
   });
 }

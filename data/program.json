@@ -34,7 +34,8 @@
               "reps": "15",
               "rest": "0s",
               "video_id": "MnDpmNYUjbc",
-              "note": "Light band. Squeeze shoulder blades together at end range."
+              "note": "Light band. Squeeze shoulder blades together at end range.",
+              "uses_weight": false
             },
             {
               "name": "Warmup: Hip Circles",
@@ -42,7 +43,8 @@
               "reps": "10/direction",
               "rest": "0s",
               "video_id": "altA7815AGs",
-              "note": "Controlled circles, both directions. Open up the hip capsule."
+              "note": "Controlled circles, both directions. Open up the hip capsule.",
+              "uses_weight": false
             },
             {
               "name": "Swedish Ladder Dead Hang",
@@ -50,7 +52,8 @@
               "reps": "45s",
               "rest": "60s",
               "video_id": "iayQ-AeOpvE",
-              "note": "Engage scaps, do not just hang loose."
+              "note": "Engage scaps, do not just hang loose.",
+              "uses_weight": false
             },
             {
               "name": "KB Gorilla Rows",
@@ -58,7 +61,10 @@
               "reps": "12/side",
               "rest": "90s",
               "video_id": "Z44y6AgV-TI",
-              "note": "Keep lower back flat. Use the 10lb DB if KB is too heavy initially."
+              "note": "Keep lower back flat. Use the 10lb DB if KB is too heavy initially.",
+              "uses_weight": true,
+              "starting_weight": 20,
+              "weight_increment": 5
             },
             {
               "name": "Kettlebell Swings",
@@ -67,7 +73,10 @@
               "rest": "90s",
               "video_id": "1cVT3ee9mgU",
               "video_start": 9,
-              "note": "Hinge only. Squeeze glutes at top. No lower back rounding."
+              "note": "Hinge only. Squeeze glutes at top. No lower back rounding.",
+              "uses_weight": true,
+              "starting_weight": 25,
+              "weight_increment": 5
             },
             {
               "name": "TRX Inverted Rows",
@@ -75,7 +84,8 @@
               "reps": "8-12",
               "rest": "90s",
               "video_id": "ypIQZWKMbkU",
-              "note": "Adjust strap length to change difficulty. Stop 1-2 reps before form breaks down."
+              "note": "Adjust strap length to change difficulty. Stop 1-2 reps before form breaks down.",
+              "uses_weight": false
             }
           ]
         },
@@ -89,7 +99,8 @@
               "reps": "5/side",
               "rest": "0s",
               "video_id": "u3M3F8ScJsE",
-              "note": "Lunge, rotate, reach. Opens hips, T-spine, and shoulders in one flow."
+              "note": "Lunge, rotate, reach. Opens hips, T-spine, and shoulders in one flow.",
+              "uses_weight": false
             },
             {
               "name": "Goblet Squats",
@@ -97,7 +108,10 @@
               "reps": "12",
               "rest": "90s",
               "video_id": "tToWat96Rhk",
-              "note": "Elbows inside knees at bottom."
+              "note": "Elbows inside knees at bottom.",
+              "uses_weight": true,
+              "starting_weight": 20,
+              "weight_increment": 5
             },
             {
               "name": "Swedish Ladder Pushups",
@@ -105,7 +119,8 @@
               "reps": "12-15",
               "rest": "60s",
               "video_id": "GcSyCL4qpNI",
-              "note": "Slow eccentric (3 seconds down)."
+              "note": "Slow eccentric (3 seconds down).",
+              "uses_weight": false
             },
             {
               "name": "Hanging Knee Raises",
@@ -113,7 +128,8 @@
               "reps": "10",
               "rest": "60s",
               "video_id": "l7OroezzX9k",
-              "note": "Back against the ladder. Don't swing."
+              "note": "Back against the ladder. Don't swing.",
+              "uses_weight": false
             },
             {
               "name": "Peloton HIIT Tabata",
@@ -121,7 +137,8 @@
               "reps": "20 mins",
               "rest": "N/A",
               "video_id": "",
-              "note": "Select a 'Tabata' or 'HIIT' class from the library."
+              "note": "Select a 'Tabata' or 'HIIT' class from the library.",
+              "uses_weight": false
             }
           ]
         },
@@ -135,7 +152,8 @@
               "reps": "60s",
               "rest": "30s",
               "video_id": "bJII__gcUHA",
-              "note": "Loosen up the hips for squats."
+              "note": "Loosen up the hips for squats.",
+              "uses_weight": false
             },
             {
               "name": "Cat/Cow Spinal Flow",
@@ -143,7 +161,8 @@
               "reps": "60s",
               "rest": "30s",
               "video_id": "Xq3nUS-Y2q4",
-              "note": "Focus on segmental movement."
+              "note": "Focus on segmental movement.",
+              "uses_weight": false
             },
             {
               "name": "Thread the Needle",
@@ -151,7 +170,8 @@
               "reps": "8/side",
               "rest": "30s",
               "video_id": "ljEdoRyuPpg",
-              "note": "Thoracic rotation. Reach through, then open to ceiling. Keep hips stacked."
+              "note": "Thoracic rotation. Reach through, then open to ceiling. Keep hips stacked.",
+              "uses_weight": false
             },
             {
               "name": "Wall Slides",
@@ -159,7 +179,8 @@
               "reps": "10",
               "rest": "30s",
               "video_id": "gYVohh1dHHQ",
-              "note": "Keep lower back and wrists flat against wall. Targets shoulder mobility and scapular control."
+              "note": "Keep lower back and wrists flat against wall. Targets shoulder mobility and scapular control.",
+              "uses_weight": false
             },
             {
               "name": "Peloton Power Zone Endurance",
@@ -167,7 +188,8 @@
               "reps": "45 mins",
               "rest": "N/A",
               "video_id": "",
-              "note": "Zone 2/3 focus. Sweat but able to talk."
+              "note": "Zone 2/3 focus. Sweat but able to talk.",
+              "uses_weight": false
             }
           ]
         }

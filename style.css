@@ -196,6 +196,45 @@ main {
   color: var(--text-secondary);
 }
 
+/* Weight Controls (+/- buttons) */
+.weight-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.weight-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  font-size: 1.2rem;
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.weight-btn:hover {
+  background: var(--accent);
+  color: var(--bg-primary);
+}
+
+.weight-btn:active {
+  transform: scale(0.95);
+}
+
+.suggested-hint {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-style: italic;
+  margin-left: 0.5rem;
+}
+
 /* Rest Day */
 #rest-day {
   text-align: center;
