@@ -124,4 +124,118 @@ test.describe('Basement Lab PWA', () => {
     // Should be dark (rgb values close to 0)
     expect(bgColor).toMatch(/rgb\(\s*10,\s*10,\s*10\s*\)/);
   });
+
+  test('feedback toggle expands and collapses feedback section', async ({ page }) => {
+    const feedbackToggle = page.locator('.feedback-toggle').first();
+    const feedbackContent = page.locator('.feedback-content').first();
+
+    // Initially collapsed
+    await expect(feedbackContent).toBeHidden();
+
+    // Click to expand
+    await feedbackToggle.click();
+    await expect(feedbackContent).toBeVisible();
+    await expect(feedbackToggle).toContainText('Hide feedback');
+
+    // Click to collapse
+    await feedbackToggle.click();
+    await expect(feedbackContent).toBeHidden();
+    await expect(feedbackToggle).toContainText('Add feedback');
+  });
+
+  test('difficulty buttons can be selected', async ({ page }) => {
+    // Expand feedback section
+    await page.locator('.feedback-toggle').first().click();
+
+    const difficultyButtons = page.locator('.difficulty-buttons').first();
+    const hardBtn = difficultyButtons.locator('[data-difficulty="hard"]');
+    const goodBtn = difficultyButtons.locator('[data-difficulty="good"]');
+
+    // Good should be selected by default
+    await expect(goodBtn).toHaveClass(/selected/);
+
+    // Click hard
+    await hardBtn.click();
+    await expect(hardBtn).toHaveClass(/selected/);
+    await expect(goodBtn).not.toHaveClass(/selected/);
+  });
+
+  test('difficulty saves to localStorage', async ({ page }) => {
+    // Expand feedback section
+    await page.locator('.feedback-toggle').first().click();
+
+    // Select hard difficulty
+    await page.locator('.difficulty-buttons').first().locator('[data-difficulty="hard"]').click();
+
+    // Check localStorage
+    const log = await page.evaluate(() => localStorage.getItem('basement_lab_log'));
+    expect(log).toContain('"difficulty":"hard"');
+  });
+
+  test('failed button shows set/rep sliders', async ({ page }) => {
+    // Expand feedback section
+    await page.locator('.feedback-toggle').first().click();
+
+    const failedDetails = page.locator('.failed-details').first();
+
+    // Initially hidden
+    await expect(failedDetails).toBeHidden();
+
+    // Click failed button
+    await page.locator('.difficulty-buttons').first().locator('[data-difficulty="failed"]').click();
+
+    // Sliders should be visible
+    await expect(failedDetails).toBeVisible();
+    await expect(failedDetails.locator('.failed-set-slider')).toBeVisible();
+    await expect(failedDetails.locator('.failed-rep-slider')).toBeVisible();
+  });
+
+  test('failed sliders save to localStorage', async ({ page }) => {
+    // Expand feedback and select failed
+    await page.locator('.feedback-toggle').first().click();
+    await page.locator('.difficulty-buttons').first().locator('[data-difficulty="failed"]').click();
+
+    // Adjust sliders
+    const setSlider = page.locator('.failed-set-slider').first();
+    const repSlider = page.locator('.failed-rep-slider').first();
+
+    await setSlider.fill('2');
+    await repSlider.fill('5');
+
+    // Check localStorage
+    const log = await page.evaluate(() => localStorage.getItem('basement_lab_log'));
+    expect(log).toContain('"failedSet":2');
+    expect(log).toContain('"failedRep":5');
+  });
+
+  test('notes textarea saves to localStorage', async ({ page }) => {
+    // Expand feedback section
+    await page.locator('.feedback-toggle').first().click();
+
+    const notesField = page.locator('.notes-field').first();
+    await notesField.fill('Felt strong today');
+
+    // Check localStorage
+    const log = await page.evaluate(() => localStorage.getItem('basement_lab_log'));
+    expect(log).toContain('Felt strong today');
+  });
+
+  test('feedback persists after reload', async ({ page }) => {
+    // Expand feedback and set values
+    await page.locator('.feedback-toggle').first().click();
+    await page.locator('.difficulty-buttons').first().locator('[data-difficulty="hard"]').click();
+    await page.locator('.notes-field').first().fill('Test note');
+
+    // Reload
+    await page.reload();
+
+    // Feedback section should be expanded (has custom feedback)
+    const feedbackContent = page.locator('.feedback-content').first();
+    await expect(feedbackContent).toBeVisible();
+
+    // Values should persist
+    const hardBtn = page.locator('.difficulty-buttons').first().locator('[data-difficulty="hard"]');
+    await expect(hardBtn).toHaveClass(/selected/);
+    await expect(page.locator('.notes-field').first()).toHaveValue('Test note');
+  });
 });
