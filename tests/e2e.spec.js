@@ -115,7 +115,14 @@ test.describe('Basement Lab PWA', () => {
     await expect(page.locator('#workout-card')).toBeHidden();
   });
 
-  test('has dark theme colors', async ({ page }) => {
+  test('has dark mode colors', async ({ page }) => {
+    // Ensure dark mode for this test
+    await page.evaluate(() => {
+      localStorage.setItem('basement_lab_theme', 'cyberpunk');
+      localStorage.setItem('basement_lab_mode', 'dark');
+    });
+    await page.reload();
+
     const body = page.locator('body');
     const bgColor = await body.evaluate(el =>
       getComputedStyle(el).backgroundColor
@@ -237,5 +244,240 @@ test.describe('Basement Lab PWA', () => {
     const hardBtn = page.locator('.difficulty-buttons').first().locator('[data-difficulty="hard"]');
     await expect(hardBtn).toHaveClass(/selected/);
     await expect(page.locator('.notes-field').first()).toHaveValue('Test note');
+  });
+
+  // =============================================
+  // Theme and Mode Tests
+  // =============================================
+
+  test('settings button opens settings modal', async ({ page }) => {
+    const settingsBtn = page.locator('#settings-btn');
+    const settingsModal = page.locator('#settings-modal');
+
+    // Initially hidden
+    await expect(settingsModal).toBeHidden();
+
+    // Click to open
+    await settingsBtn.click();
+    await expect(settingsModal).toBeVisible();
+  });
+
+  test('settings modal closes on backdrop click', async ({ page }) => {
+    // Open settings
+    await page.locator('#settings-btn').click();
+    const settingsModal = page.locator('#settings-modal');
+    await expect(settingsModal).toBeVisible();
+
+    // Click backdrop (the modal itself, not the content)
+    await settingsModal.click({ position: { x: 10, y: 10 } });
+    await expect(settingsModal).toBeHidden();
+  });
+
+  test('theme selection changes data-theme attribute', async ({ page }) => {
+    const html = page.locator('html');
+
+    // Open settings
+    await page.locator('#settings-btn').click();
+
+    // Default should be cyberpunk
+    await expect(html).toHaveAttribute('data-theme', 'cyberpunk');
+
+    // Select material theme
+    await page.locator('.theme-option[data-theme="material"]').click();
+    await expect(html).toHaveAttribute('data-theme', 'material');
+
+    // Select ocean theme
+    await page.locator('.theme-option[data-theme="ocean"]').click();
+    await expect(html).toHaveAttribute('data-theme', 'ocean');
+
+    // Select ember theme
+    await page.locator('.theme-option[data-theme="ember"]').click();
+    await expect(html).toHaveAttribute('data-theme', 'ember');
+  });
+
+  test('theme selection updates active state', async ({ page }) => {
+    // Open settings
+    await page.locator('#settings-btn').click();
+
+    const cyberpunkOption = page.locator('.theme-option[data-theme="cyberpunk"]');
+    const materialOption = page.locator('.theme-option[data-theme="material"]');
+
+    // Default cyberpunk should be active
+    await expect(cyberpunkOption).toHaveClass(/active/);
+    await expect(materialOption).not.toHaveClass(/active/);
+
+    // Select material
+    await materialOption.click();
+    await expect(materialOption).toHaveClass(/active/);
+    await expect(cyberpunkOption).not.toHaveClass(/active/);
+  });
+
+  test('mode toggle switches between light and dark', async ({ page }) => {
+    const html = page.locator('html');
+
+    // Ensure we start in dark mode
+    await page.evaluate(() => localStorage.setItem('basement_lab_mode', 'dark'));
+    await page.reload();
+
+    // Open settings
+    await page.locator('#settings-btn').click();
+
+    // Should be in dark mode
+    await expect(html).toHaveAttribute('data-mode', 'dark');
+
+    // Click light mode button
+    await page.locator('.mode-btn[data-mode="light"]').click();
+    await expect(html).toHaveAttribute('data-mode', 'light');
+
+    // Click dark mode button
+    await page.locator('.mode-btn[data-mode="dark"]').click();
+    await expect(html).toHaveAttribute('data-mode', 'dark');
+  });
+
+  test('mode toggle updates active state', async ({ page }) => {
+    // Ensure dark mode
+    await page.evaluate(() => localStorage.setItem('basement_lab_mode', 'dark'));
+    await page.reload();
+
+    // Open settings
+    await page.locator('#settings-btn').click();
+
+    const darkBtn = page.locator('.mode-btn[data-mode="dark"]');
+    const lightBtn = page.locator('.mode-btn[data-mode="light"]');
+
+    // Dark should be active
+    await expect(darkBtn).toHaveClass(/active/);
+    await expect(lightBtn).not.toHaveClass(/active/);
+
+    // Click light
+    await lightBtn.click();
+    await expect(lightBtn).toHaveClass(/active/);
+    await expect(darkBtn).not.toHaveClass(/active/);
+  });
+
+  test('theme persists after reload', async ({ page }) => {
+    const html = page.locator('html');
+
+    // Open settings and select material theme
+    await page.locator('#settings-btn').click();
+    await page.locator('.theme-option[data-theme="material"]').click();
+    await expect(html).toHaveAttribute('data-theme', 'material');
+
+    // Reload
+    await page.reload();
+
+    // Should still be material theme
+    await expect(html).toHaveAttribute('data-theme', 'material');
+  });
+
+  test('mode persists after reload', async ({ page }) => {
+    const html = page.locator('html');
+
+    // Ensure dark mode start
+    await page.evaluate(() => localStorage.setItem('basement_lab_mode', 'dark'));
+    await page.reload();
+
+    // Open settings and switch to light
+    await page.locator('#settings-btn').click();
+    await page.locator('.mode-btn[data-mode="light"]').click();
+    await expect(html).toHaveAttribute('data-mode', 'light');
+
+    // Reload
+    await page.reload();
+
+    // Should still be light mode
+    await expect(html).toHaveAttribute('data-mode', 'light');
+  });
+
+  test('theme and mode can be set independently', async ({ page }) => {
+    const html = page.locator('html');
+
+    // Open settings
+    await page.locator('#settings-btn').click();
+
+    // Set material theme + light mode
+    await page.locator('.theme-option[data-theme="material"]').click();
+    await page.locator('.mode-btn[data-mode="light"]').click();
+
+    await expect(html).toHaveAttribute('data-theme', 'material');
+    await expect(html).toHaveAttribute('data-mode', 'light');
+
+    // Reload and verify
+    await page.reload();
+    await expect(html).toHaveAttribute('data-theme', 'material');
+    await expect(html).toHaveAttribute('data-mode', 'light');
+  });
+
+  test('mode respects system preference on first load', async ({ page }) => {
+    // Clear localStorage to simulate first visit
+    await page.evaluate(() => {
+      localStorage.removeItem('basement_lab_theme');
+      localStorage.removeItem('basement_lab_mode');
+    });
+
+    // Emulate light color scheme preference
+    await page.emulateMedia({ colorScheme: 'light' });
+    await page.reload();
+
+    const html = page.locator('html');
+    await expect(html).toHaveAttribute('data-mode', 'light');
+  });
+
+  test('material theme uses system font', async ({ page }) => {
+    // Set material theme
+    await page.evaluate(() => localStorage.setItem('basement_lab_theme', 'material'));
+    await page.reload();
+
+    const body = page.locator('body');
+    const fontFamily = await body.evaluate(el =>
+      getComputedStyle(el).fontFamily
+    );
+
+    // Should contain system-ui or sans-serif, not monospace
+    expect(fontFamily).toMatch(/system-ui|sans-serif/i);
+    expect(fontFamily).not.toMatch(/courier|monospace/i);
+  });
+
+  test('cyberpunk theme uses monospace font', async ({ page }) => {
+    // Ensure cyberpunk theme
+    await page.evaluate(() => localStorage.setItem('basement_lab_theme', 'cyberpunk'));
+    await page.reload();
+
+    const body = page.locator('body');
+    const fontFamily = await body.evaluate(el =>
+      getComputedStyle(el).fontFamily
+    );
+
+    // Should contain Courier or monospace
+    expect(fontFamily).toMatch(/courier|monospace/i);
+  });
+
+  test('each theme has distinct accent color', async ({ page }) => {
+    const getAccentColor = async () => {
+      const header = page.locator('header h1');
+      return header.evaluate(el => getComputedStyle(el).color);
+    };
+
+    // Get color for each theme
+    await page.evaluate(() => localStorage.setItem('basement_lab_theme', 'cyberpunk'));
+    await page.reload();
+    const cyberpunkColor = await getAccentColor();
+
+    await page.evaluate(() => localStorage.setItem('basement_lab_theme', 'material'));
+    await page.reload();
+    const materialColor = await getAccentColor();
+
+    await page.evaluate(() => localStorage.setItem('basement_lab_theme', 'ocean'));
+    await page.reload();
+    const oceanColor = await getAccentColor();
+
+    await page.evaluate(() => localStorage.setItem('basement_lab_theme', 'ember'));
+    await page.reload();
+    const emberColor = await getAccentColor();
+
+    // All should be different
+    const colors = [cyberpunkColor, materialColor, oceanColor, emberColor];
+    const uniqueColors = [...new Set(colors)];
+    expect(uniqueColors.length).toBe(4);
   });
 });
