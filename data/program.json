@@ -18,12 +18,20 @@
           "focus": "Back Health & Biceps",
           "exercises": [
             {
-              "name": "Warmup: Band Pull-Aparts & Hip Circles",
+              "name": "Warmup: Band Pull-Aparts",
               "sets": 2,
-              "reps": "15 each",
+              "reps": "15",
               "rest": "0s",
               "video_id": "JObTUaX9sg8",
-              "note": "Light band. Squeeze shoulder blades on pull-aparts. Circle hips both directions."
+              "note": "Light band. Squeeze shoulder blades together at end range."
+            },
+            {
+              "name": "Warmup: Hip Circles",
+              "sets": 2,
+              "reps": "10/direction",
+              "rest": "0s",
+              "video_id": "bLBMHP8iybo",
+              "note": "Controlled circles, both directions. Open up the hip capsule."
             },
             {
               "name": "Swedish Ladder Dead Hang",

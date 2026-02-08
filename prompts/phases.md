@@ -1,3 +1,11 @@
+# Schema Constraints
+
+**CRITICAL: These constraints must be followed in all generated programs:**
+
+1. **One exercise per entry.** Never combine multiple movements in a single exercise entry (e.g., "Pullups & Dips" is invalid). Each movement gets its own entry with its own sets, reps, and video link. This enables proper tracking and clear instruction.
+
+---
+
 # Phase 1: The Foundation (Months 1-3)
 "Act as a strength coach specializing in sarcopenia prevention and aesthetics for men over 45. Create a 12-week 'Recomposition' program for a male, 47, with mild back history.
 Equipment: Kettlebells, Swedish Ladder, Pull-up Bar, Peloton.
