@@ -114,7 +114,10 @@ function render() {
 
   exercisesList.innerHTML = workout.exercises.map((ex, index) => {
     const exerciseKey = `${currentState.globalDay}_${index}`;
-    const currentWeight = log[exerciseKey]?.weight || '';
+    const logEntry = log[exerciseKey] || {};
+    const currentWeight = logEntry.weight || '';
+    const currentDifficulty = logEntry.difficulty || '';
+    const currentNotes = logEntry.notes || '';
 
     // Calculate suggested weight for weight-based exercises
     const suggestedWeight = ex.uses_weight
@@ -159,6 +162,45 @@ function render() {
       `;
     }
 
+    // Build collapsible feedback section (difficulty + notes)
+    const hasCustomFeedback = currentDifficulty && currentDifficulty !== 'good' || currentNotes;
+    const maxSets = ex.sets;
+    const maxReps = parseReps(ex.reps);
+    const failedSet = logEntry.failedSet || 1;
+    const failedRep = logEntry.failedRep || 1;
+
+    const feedbackSection = `
+      <div class="feedback-section${hasCustomFeedback ? ' expanded' : ''}">
+        <button class="feedback-toggle" data-key="${exerciseKey}">
+          <span class="feedback-toggle-text">${hasCustomFeedback ? 'Hide feedback' : 'Add feedback'}</span>
+        </button>
+        <div class="feedback-content">
+          <div class="difficulty-input">
+            <label>How was it?</label>
+            <div class="difficulty-buttons">
+              <button class="difficulty-btn${currentDifficulty === 'failed' ? ' selected' : ''}" data-difficulty="failed" data-key="${exerciseKey}" data-exercise="${ex.name}" data-sets="${maxSets}" data-reps="${maxReps}">FAILED</button>
+              <button class="difficulty-btn${currentDifficulty === 'easy' ? ' selected' : ''}" data-difficulty="easy" data-key="${exerciseKey}" data-exercise="${ex.name}">EASY</button>
+              <button class="difficulty-btn${currentDifficulty === 'good' || !currentDifficulty ? ' selected' : ''}" data-difficulty="good" data-key="${exerciseKey}" data-exercise="${ex.name}">GOOD</button>
+              <button class="difficulty-btn${currentDifficulty === 'hard' ? ' selected' : ''}" data-difficulty="hard" data-key="${exerciseKey}" data-exercise="${ex.name}">HARD</button>
+            </div>
+          </div>
+          <div class="failed-details${currentDifficulty === 'failed' ? ' visible' : ''}" data-key="${exerciseKey}">
+            <div class="slider-group">
+              <label>Failed on set: <span class="slider-value">${failedSet}</span> / ${maxSets}</label>
+              <input type="range" class="failed-set-slider" data-key="${exerciseKey}" data-exercise="${ex.name}" min="1" max="${maxSets}" value="${failedSet}">
+            </div>
+            <div class="slider-group">
+              <label>Failed on rep: <span class="slider-value">${failedRep}</span> / ${maxReps}</label>
+              <input type="range" class="failed-rep-slider" data-key="${exerciseKey}" data-exercise="${ex.name}" min="1" max="${maxReps}" value="${failedRep}">
+            </div>
+          </div>
+          <div class="notes-input">
+            <textarea class="notes-field" data-key="${exerciseKey}" data-exercise="${ex.name}" placeholder="Notes (optional)">${currentNotes}</textarea>
+          </div>
+        </div>
+      </div>
+    `;
+
     return `
       <div class="exercise" data-index="${index}">
         <div class="exercise-header">
@@ -172,9 +214,16 @@ function render() {
         </div>
         ${ex.note ? `<div class="exercise-note">${ex.note}</div>` : ''}
         ${weightSection}
+        ${feedbackSection}
       </div>
     `;
   }).join('');
+}
+
+// Parse reps string to extract numeric value (e.g., "10/direction" -> 10)
+function parseReps(repsStr) {
+  const match = String(repsStr).match(/\d+/);
+  return match ? parseInt(match[0]) : 10;
 }
 
 // Get the last recorded weight for an exercise
@@ -290,6 +339,68 @@ function bindEvents() {
       }
     }
   });
+
+  // Difficulty buttons (delegated)
+  document.getElementById('exercises-list').addEventListener('click', (e) => {
+    if (e.target.classList.contains('difficulty-btn')) {
+      const key = e.target.dataset.key;
+      const difficulty = e.target.dataset.difficulty;
+      const exercise = e.target.dataset.exercise;
+
+      // Update visual selection
+      const container = e.target.closest('.difficulty-buttons');
+      container.querySelectorAll('.difficulty-btn').forEach(btn => btn.classList.remove('selected'));
+      e.target.classList.add('selected');
+
+      // Show/hide failed details
+      const failedDetails = document.querySelector(`.failed-details[data-key="${key}"]`);
+      if (failedDetails) {
+        if (difficulty === 'failed') {
+          failedDetails.classList.add('visible');
+        } else {
+          failedDetails.classList.remove('visible');
+        }
+      }
+
+      // Save to log
+      saveDifficulty(key, exercise, difficulty);
+    }
+  });
+
+  // Failed sliders (delegated)
+  document.getElementById('exercises-list').addEventListener('input', (e) => {
+    if (e.target.classList.contains('failed-set-slider') || e.target.classList.contains('failed-rep-slider')) {
+      const slider = e.target;
+      const key = slider.dataset.key;
+      const exercise = slider.dataset.exercise;
+
+      // Update display value
+      const label = slider.previousElementSibling;
+      label.querySelector('.slider-value').textContent = slider.value;
+
+      // Save to log
+      saveFailedDetails(key, exercise);
+    }
+  });
+
+  // Notes field (delegated)
+  document.getElementById('exercises-list').addEventListener('input', (e) => {
+    if (e.target.classList.contains('notes-field')) {
+      saveNotes(e.target);
+    }
+  });
+
+  // Feedback toggle (delegated)
+  document.getElementById('exercises-list').addEventListener('click', (e) => {
+    if (e.target.classList.contains('feedback-toggle') || e.target.classList.contains('feedback-toggle-text')) {
+      const toggle = e.target.closest('.feedback-toggle');
+      const section = toggle.closest('.feedback-section');
+      const text = toggle.querySelector('.feedback-toggle-text');
+
+      section.classList.toggle('expanded');
+      text.textContent = section.classList.contains('expanded') ? 'Hide feedback' : 'Add feedback';
+    }
+  });
 }
 
 // Save weight input to log
@@ -299,14 +410,89 @@ function saveWeightInput(input) {
   const weight = input.value;
 
   if (weight) {
+    // Preserve existing fields when updating weight
     log[key] = {
+      ...log[key],
       exercise: input.dataset.exercise,
       weight: parseFloat(weight),
       day: currentState.globalDay,
       timestamp: Date.now()
     };
-  } else {
-    delete log[key];
+  } else if (log[key]) {
+    // Remove weight but keep other fields if they exist
+    delete log[key].weight;
+    // If no meaningful data left, remove the entry
+    if (!log[key].difficulty && !log[key].notes) {
+      delete log[key];
+    }
+  }
+
+  saveLog(log);
+}
+
+// Save difficulty to log
+function saveDifficulty(key, exercise, difficulty) {
+  const log = loadLog();
+
+  log[key] = {
+    ...log[key],
+    exercise: exercise,
+    difficulty: difficulty,
+    day: currentState.globalDay,
+    timestamp: Date.now()
+  };
+
+  // Clear failed details if not failed
+  if (difficulty !== 'failed') {
+    delete log[key].failedSet;
+    delete log[key].failedRep;
+  }
+
+  saveLog(log);
+}
+
+// Save failed set/rep details to log
+function saveFailedDetails(key, exercise) {
+  const log = loadLog();
+  const setSlider = document.querySelector(`.failed-set-slider[data-key="${key}"]`);
+  const repSlider = document.querySelector(`.failed-rep-slider[data-key="${key}"]`);
+
+  log[key] = {
+    ...log[key],
+    exercise: exercise,
+    failedSet: parseInt(setSlider.value),
+    failedRep: parseInt(repSlider.value),
+    day: currentState.globalDay,
+    timestamp: Date.now()
+  };
+
+  saveLog(log);
+}
+
+// Save notes to log
+function saveNotes(textarea) {
+  const log = loadLog();
+  const key = textarea.dataset.key;
+  const notes = textarea.value.trim();
+
+  if (notes || log[key]) {
+    log[key] = {
+      ...log[key],
+      exercise: textarea.dataset.exercise,
+      notes: notes,
+      day: currentState.globalDay,
+      timestamp: Date.now()
+    };
+
+    // Clean up empty notes
+    if (!notes) {
+      delete log[key].notes;
+    }
+
+    // If no meaningful data left, remove the entry
+    if (!log[key].weight && !log[key].difficulty && !log[key].notes) {
+      delete log[key];
+    }
   }
 
   saveLog(log);
