@@ -235,11 +235,47 @@ main {
   margin-left: 0.5rem;
 }
 
-/* Difficulty Input */
-.difficulty-input {
+/* Feedback Section (collapsible) */
+.feedback-section {
   margin-top: 0.75rem;
   padding-top: 0.75rem;
   border-top: 1px solid var(--border);
+}
+
+.feedback-toggle {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  padding: 0.4rem 0.75rem;
+  font-size: 0.85rem;
+  font-family: inherit;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.feedback-toggle:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.feedback-content {
+  display: none;
+  margin-top: 0.75rem;
+}
+
+.feedback-section.expanded .feedback-content {
+  display: block;
+}
+
+.feedback-section.expanded .feedback-toggle {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Difficulty Input */
+.difficulty-input {
+  margin-bottom: 0.75rem;
 }
 
 .difficulty-input label {

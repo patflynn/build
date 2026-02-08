@@ -162,23 +162,27 @@ function render() {
       `;
     }
 
-    // Build difficulty section
-    const difficultySection = `
-      <div class="difficulty-input">
-        <label>How was it?</label>
-        <div class="difficulty-buttons">
-          <button class="difficulty-btn${currentDifficulty === 'failed' ? ' selected' : ''}" data-difficulty="failed" data-key="${exerciseKey}" data-exercise="${ex.name}">FAILED</button>
-          <button class="difficulty-btn${currentDifficulty === 'easy' ? ' selected' : ''}" data-difficulty="easy" data-key="${exerciseKey}" data-exercise="${ex.name}">EASY</button>
-          <button class="difficulty-btn${currentDifficulty === 'good' ? ' selected' : ''}" data-difficulty="good" data-key="${exerciseKey}" data-exercise="${ex.name}">GOOD</button>
-          <button class="difficulty-btn${currentDifficulty === 'hard' ? ' selected' : ''}" data-difficulty="hard" data-key="${exerciseKey}" data-exercise="${ex.name}">HARD</button>
+    // Build collapsible feedback section (difficulty + notes)
+    const hasCustomFeedback = currentDifficulty && currentDifficulty !== 'good' || currentNotes;
+    const feedbackSection = `
+      <div class="feedback-section${hasCustomFeedback ? ' expanded' : ''}">
+        <button class="feedback-toggle" data-key="${exerciseKey}">
+          <span class="feedback-toggle-text">${hasCustomFeedback ? 'Hide feedback' : 'Add feedback'}</span>
+        </button>
+        <div class="feedback-content">
+          <div class="difficulty-input">
+            <label>How was it?</label>
+            <div class="difficulty-buttons">
+              <button class="difficulty-btn${currentDifficulty === 'failed' ? ' selected' : ''}" data-difficulty="failed" data-key="${exerciseKey}" data-exercise="${ex.name}">FAILED</button>
+              <button class="difficulty-btn${currentDifficulty === 'easy' ? ' selected' : ''}" data-difficulty="easy" data-key="${exerciseKey}" data-exercise="${ex.name}">EASY</button>
+              <button class="difficulty-btn${currentDifficulty === 'good' || !currentDifficulty ? ' selected' : ''}" data-difficulty="good" data-key="${exerciseKey}" data-exercise="${ex.name}">GOOD</button>
+              <button class="difficulty-btn${currentDifficulty === 'hard' ? ' selected' : ''}" data-difficulty="hard" data-key="${exerciseKey}" data-exercise="${ex.name}">HARD</button>
+            </div>
+          </div>
+          <div class="notes-input">
+            <textarea class="notes-field" data-key="${exerciseKey}" data-exercise="${ex.name}" placeholder="Notes (optional)">${currentNotes}</textarea>
+          </div>
         </div>
-      </div>
-    `;
-
-    // Build notes section
-    const notesSection = `
-      <div class="notes-input">
-        <textarea class="notes-field" data-key="${exerciseKey}" data-exercise="${ex.name}" placeholder="Notes (optional)">${currentNotes}</textarea>
       </div>
     `;
 
@@ -195,8 +199,7 @@ function render() {
         </div>
         ${ex.note ? `<div class="exercise-note">${ex.note}</div>` : ''}
         ${weightSection}
-        ${difficultySection}
-        ${notesSection}
+        ${feedbackSection}
       </div>
     `;
   }).join('');
@@ -337,6 +340,18 @@ function bindEvents() {
   document.getElementById('exercises-list').addEventListener('input', (e) => {
     if (e.target.classList.contains('notes-field')) {
       saveNotes(e.target);
+    }
+  });
+
+  // Feedback toggle (delegated)
+  document.getElementById('exercises-list').addEventListener('click', (e) => {
+    if (e.target.classList.contains('feedback-toggle') || e.target.classList.contains('feedback-toggle-text')) {
+      const toggle = e.target.closest('.feedback-toggle');
+      const section = toggle.closest('.feedback-section');
+      const text = toggle.querySelector('.feedback-toggle-text');
+
+      section.classList.toggle('expanded');
+      text.textContent = section.classList.contains('expanded') ? 'Hide feedback' : 'Add feedback';
     }
   });
 }
