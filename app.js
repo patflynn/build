@@ -114,7 +114,10 @@ function render() {
 
   exercisesList.innerHTML = workout.exercises.map((ex, index) => {
     const exerciseKey = `${currentState.globalDay}_${index}`;
-    const currentWeight = log[exerciseKey]?.weight || '';
+    const logEntry = log[exerciseKey] || {};
+    const currentWeight = logEntry.weight || '';
+    const currentDifficulty = logEntry.difficulty || '';
+    const currentNotes = logEntry.notes || '';
 
     // Calculate suggested weight for weight-based exercises
     const suggestedWeight = ex.uses_weight
@@ -159,6 +162,26 @@ function render() {
       `;
     }
 
+    // Build difficulty section
+    const difficultySection = `
+      <div class="difficulty-input">
+        <label>How was it?</label>
+        <div class="difficulty-buttons">
+          <button class="difficulty-btn${currentDifficulty === 'failed' ? ' selected' : ''}" data-difficulty="failed" data-key="${exerciseKey}" data-exercise="${ex.name}">FAILED</button>
+          <button class="difficulty-btn${currentDifficulty === 'easy' ? ' selected' : ''}" data-difficulty="easy" data-key="${exerciseKey}" data-exercise="${ex.name}">EASY</button>
+          <button class="difficulty-btn${currentDifficulty === 'good' ? ' selected' : ''}" data-difficulty="good" data-key="${exerciseKey}" data-exercise="${ex.name}">GOOD</button>
+          <button class="difficulty-btn${currentDifficulty === 'hard' ? ' selected' : ''}" data-difficulty="hard" data-key="${exerciseKey}" data-exercise="${ex.name}">HARD</button>
+        </div>
+      </div>
+    `;
+
+    // Build notes section
+    const notesSection = `
+      <div class="notes-input">
+        <textarea class="notes-field" data-key="${exerciseKey}" data-exercise="${ex.name}" placeholder="Notes (optional)">${currentNotes}</textarea>
+      </div>
+    `;
+
     return `
       <div class="exercise" data-index="${index}">
         <div class="exercise-header">
@@ -172,6 +195,8 @@ function render() {
         </div>
         ${ex.note ? `<div class="exercise-note">${ex.note}</div>` : ''}
         ${weightSection}
+        ${difficultySection}
+        ${notesSection}
       </div>
     `;
   }).join('');
@@ -290,6 +315,30 @@ function bindEvents() {
       }
     }
   });
+
+  // Difficulty buttons (delegated)
+  document.getElementById('exercises-list').addEventListener('click', (e) => {
+    if (e.target.classList.contains('difficulty-btn')) {
+      const key = e.target.dataset.key;
+      const difficulty = e.target.dataset.difficulty;
+      const exercise = e.target.dataset.exercise;
+
+      // Update visual selection
+      const container = e.target.closest('.difficulty-buttons');
+      container.querySelectorAll('.difficulty-btn').forEach(btn => btn.classList.remove('selected'));
+      e.target.classList.add('selected');
+
+      // Save to log
+      saveDifficulty(key, exercise, difficulty);
+    }
+  });
+
+  // Notes field (delegated)
+  document.getElementById('exercises-list').addEventListener('input', (e) => {
+    if (e.target.classList.contains('notes-field')) {
+      saveNotes(e.target);
+    }
+  });
 }
 
 // Save weight input to log
@@ -299,14 +348,65 @@ function saveWeightInput(input) {
   const weight = input.value;
 
   if (weight) {
+    // Preserve existing fields when updating weight
     log[key] = {
+      ...log[key],
       exercise: input.dataset.exercise,
       weight: parseFloat(weight),
       day: currentState.globalDay,
       timestamp: Date.now()
     };
-  } else {
-    delete log[key];
+  } else if (log[key]) {
+    // Remove weight but keep other fields if they exist
+    delete log[key].weight;
+    // If no meaningful data left, remove the entry
+    if (!log[key].difficulty && !log[key].notes) {
+      delete log[key];
+    }
+  }
+
+  saveLog(log);
+}
+
+// Save difficulty to log
+function saveDifficulty(key, exercise, difficulty) {
+  const log = loadLog();
+
+  log[key] = {
+    ...log[key],
+    exercise: exercise,
+    difficulty: difficulty,
+    day: currentState.globalDay,
+    timestamp: Date.now()
+  };
+
+  saveLog(log);
+}
+
+// Save notes to log
+function saveNotes(textarea) {
+  const log = loadLog();
+  const key = textarea.dataset.key;
+  const notes = textarea.value.trim();
+
+  if (notes || log[key]) {
+    log[key] = {
+      ...log[key],
+      exercise: textarea.dataset.exercise,
+      notes: notes,
+      day: currentState.globalDay,
+      timestamp: Date.now()
+    };
+
+    // Clean up empty notes
+    if (!notes) {
+      delete log[key].notes;
+    }
+
+    // If no meaningful data left, remove the entry
+    if (!log[key].weight && !log[key].difficulty && !log[key].notes) {
+      delete log[key];
+    }
   }
 
   saveLog(log);
