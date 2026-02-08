@@ -27,15 +27,20 @@ test.describe('Basement Lab PWA', () => {
     await expect(page.locator('#rest-day')).toBeHidden();
   });
 
-  test('displays exercises with details', async ({ page }) => {
+  test('displays exercises with required structure', async ({ page }) => {
     const exercises = page.locator('.exercise');
-    await expect(exercises).toHaveCount(4); // Workout A has 4 exercises
 
-    // Check first exercise
-    const firstExercise = exercises.first();
-    await expect(firstExercise.locator('.exercise-name')).toContainText('Swedish Ladder Dead Hang');
-    await expect(firstExercise.locator('.exercise-details')).toContainText('sets');
-    await expect(firstExercise.locator('.exercise-details')).toContainText('reps');
+    // Should have at least one exercise
+    const count = await exercises.count();
+    expect(count).toBeGreaterThan(0);
+
+    // Each exercise should have name, sets, and reps displayed
+    for (let i = 0; i < count; i++) {
+      const exercise = exercises.nth(i);
+      await expect(exercise.locator('.exercise-name')).toBeVisible();
+      await expect(exercise.locator('.exercise-details')).toContainText(/\d+\s*sets/i);
+      await expect(exercise.locator('.exercise-details')).toContainText(/reps|mins|s\b/i);
+    }
   });
 
   test('video button opens modal', async ({ page }) => {

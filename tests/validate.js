@@ -209,6 +209,57 @@ function validateSyntax() {
   if (css.includes(':root')) success('style.css uses CSS variables');
 }
 
+// Validate exercise naming (one exercise per entry)
+function validateExerciseNaming() {
+  console.log('\n🏷️ Validating exercise naming...\n');
+
+  const programPath = path.join(ROOT, 'data', 'program.json');
+  let program;
+
+  try {
+    program = JSON.parse(fs.readFileSync(programPath, 'utf-8'));
+  } catch (e) {
+    error('Cannot validate exercises: program.json parse failed');
+    return;
+  }
+
+  // Patterns that suggest multiple exercises in one entry
+  const multiExercisePatterns = [
+    { pattern: /\s+&\s+/, desc: '"&" joining exercises' },
+    { pattern: /\s+and\s+/i, desc: '"and" joining exercises' },
+    { pattern: /\s+\+\s+/, desc: '"+" joining exercises' },
+  ];
+
+  let violations = 0;
+
+  program.phases.forEach((phase, i) => {
+    if (!phase.workouts) return;
+
+    Object.entries(phase.workouts).forEach(([key, workout]) => {
+      if (!workout.exercises) return;
+
+      workout.exercises.forEach((ex, j) => {
+        // Skip checking after colon (allows "Warmup: Exercise Name")
+        const nameToCheck = ex.name.includes(':')
+          ? ex.name.split(':')[1]
+          : ex.name;
+
+        for (const { pattern, desc } of multiExercisePatterns) {
+          if (pattern.test(nameToCheck)) {
+            error(`phases[${i}].workouts.${key}.exercises[${j}]: "${ex.name}" appears to contain multiple exercises (${desc}). Each entry should be one exercise.`);
+            violations++;
+            break;
+          }
+        }
+      });
+    });
+  });
+
+  if (violations === 0) {
+    success('All exercises are single-movement entries');
+  }
+}
+
 // Run all validations
 console.log('🏋️ Basement Lab Validation Suite\n');
 console.log('='.repeat(40));
@@ -216,6 +267,7 @@ console.log('='.repeat(40));
 validateFileStructure();
 validateProgramJson();
 validatePrinciples();
+validateExerciseNaming();
 validateSyntax();
 
 console.log('\n' + '='.repeat(40));

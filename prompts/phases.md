@@ -22,6 +22,10 @@ MANDATORY REQUIREMENTS:
 
 5. LONGEVITY MINDSET: This is a 47-year-old training for sustainable fitness,
    not short-term gains. Program for decades of health, not months of aesthetics.
+
+6. ONE EXERCISE PER ENTRY: Never combine multiple movements in a single exercise
+   entry (e.g., "Pullups & Dips" is invalid). Each movement gets its own entry
+   with its own sets, reps, and video link. This enables proper tracking.
 ```
 
 ---
