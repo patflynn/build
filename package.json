@@ -1,0 +1,15 @@
+{
+  "name": "basement-lab",
+  "version": "1.0.0",
+  "description": "12-month bodybuilding transformation tracker PWA",
+  "scripts": {
+    "start": "npx serve",
+    "validate": "node tests/validate.js",
+    "test": "npx playwright test",
+    "test:headed": "npx playwright test --headed"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "serve": "^14.2.0"
+  }
+}

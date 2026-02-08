@@ -46,12 +46,18 @@ Build/
 - [x] localStorage persistence for day counter and weights
 - [x] Collapsible YouTube embed for form check videos
 
-### Phase 3: PWA Features
+### Phase 3: Testing & CI
+- [x] Validation script (JSON schema, file structure, syntax checks)
+- [x] Playwright E2E tests (load, navigate, state persistence)
+- [x] GitHub Actions workflows (test on PR, deploy preview)
+- [x] Nix flake for reproducible dev environment
+
+### Phase 4: PWA Features
 - [ ] Add `manifest.json` for installability
 - [ ] Add service worker for offline support
 - [ ] App icons
 
-### Phase 4: Polish
+### Phase 5: Polish
 - [ ] Exercise weight logging with history
 - [ ] Progress visualization
 - [ ] Phase transition handling
@@ -108,3 +114,10 @@ Build/
   - Weight tracking with "last used" placeholders
   - YouTube video modal for form checks
   - Complete & Advance functionality
+- Added testing infrastructure:
+  - `tests/validate.js` - JSON schema and syntax validation
+  - `tests/e2e.spec.js` - Playwright browser tests
+  - `flake.nix` - Nix dev environment with Node, serve, Playwright
+  - `.github/workflows/test.yml` - CI for validation and E2E tests
+  - `.github/workflows/preview.yml` - PR preview deployments
+  - `.github/workflows/pages.yml` - Production GitHub Pages deploy
