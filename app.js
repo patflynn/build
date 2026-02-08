@@ -6,6 +6,7 @@
 const STATE_KEY = 'basement_lab_state';
 const LOG_KEY = 'basement_lab_log';
 const THEME_KEY = 'basement_lab_theme';
+const MODE_KEY = 'basement_lab_mode';
 
 let programData = null;
 let currentState = null;
@@ -19,36 +20,71 @@ async function init() {
   bindEvents();
 }
 
-// Initialize theme from localStorage or system preference
+// Initialize theme and mode from localStorage or system preference
 function initTheme() {
-  const saved = localStorage.getItem(THEME_KEY);
-  const theme = saved || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-  setTheme(theme);
+  const savedTheme = localStorage.getItem(THEME_KEY) || 'cyberpunk';
+  const savedMode = localStorage.getItem(MODE_KEY) ||
+    (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+
+  setTheme(savedTheme);
+  setMode(savedMode);
+  updateSettingsUI();
 }
 
-// Set theme and update UI
+// Set theme (cyberpunk, material, ocean, ember)
 function setTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
   localStorage.setItem(THEME_KEY, theme);
-
-  // Update toggle button icon
-  const toggleBtn = document.getElementById('theme-toggle');
-  if (toggleBtn) {
-    toggleBtn.textContent = theme === 'light' ? '☾' : '☀';
-  }
-
-  // Update meta theme-color
-  const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-  if (metaThemeColor) {
-    metaThemeColor.setAttribute('content', theme === 'light' ? '#f5f5f5' : '#0a0a0a');
-  }
+  updateSettingsUI();
 }
 
-// Toggle between light and dark themes
-function toggleTheme() {
-  const current = document.documentElement.getAttribute('data-theme') || 'dark';
-  const newTheme = current === 'dark' ? 'light' : 'dark';
-  setTheme(newTheme);
+// Set mode (dark, light)
+function setMode(mode) {
+  document.documentElement.setAttribute('data-mode', mode);
+  localStorage.setItem(MODE_KEY, mode);
+
+  // Update meta theme-color based on mode
+  const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+  if (metaThemeColor) {
+    metaThemeColor.setAttribute('content', mode === 'light' ? '#f5f5f5' : '#0a0a0a');
+  }
+
+  updateSettingsUI();
+}
+
+// Update settings modal UI to reflect current theme/mode
+function updateSettingsUI() {
+  const currentTheme = document.documentElement.getAttribute('data-theme') || 'cyberpunk';
+  const currentMode = document.documentElement.getAttribute('data-mode') || 'dark';
+
+  // Update theme options
+  document.querySelectorAll('.theme-option').forEach(option => {
+    if (option.dataset.theme === currentTheme) {
+      option.classList.add('active');
+    } else {
+      option.classList.remove('active');
+    }
+  });
+
+  // Update mode buttons
+  document.querySelectorAll('.mode-btn').forEach(btn => {
+    if (btn.dataset.mode === currentMode) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+}
+
+// Open settings modal
+function openSettings() {
+  updateSettingsUI();
+  document.getElementById('settings-modal').classList.remove('hidden');
+}
+
+// Close settings modal
+function closeSettings() {
+  document.getElementById('settings-modal').classList.add('hidden');
 }
 
 // Load state from localStorage
@@ -333,8 +369,29 @@ function decrementWeight(exerciseKey, increment = 5) {
 
 // Bind event listeners
 function bindEvents() {
-  // Theme toggle button
-  document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+  // Settings button
+  document.getElementById('settings-btn').addEventListener('click', openSettings);
+
+  // Settings modal - close on backdrop click
+  document.getElementById('settings-modal').addEventListener('click', (e) => {
+    if (e.target.id === 'settings-modal') {
+      closeSettings();
+    }
+  });
+
+  // Theme selection
+  document.querySelectorAll('.theme-option').forEach(option => {
+    option.addEventListener('click', () => {
+      setTheme(option.dataset.theme);
+    });
+  });
+
+  // Mode toggle
+  document.querySelectorAll('.mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      setMode(btn.dataset.mode);
+    });
+  });
 
   // Complete & Advance button
   document.getElementById('complete-btn').addEventListener('click', completeWorkout);
