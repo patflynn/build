@@ -29,11 +29,11 @@ test.describe('Basement Lab PWA', () => {
 
   test('displays exercises with details', async ({ page }) => {
     const exercises = page.locator('.exercise');
-    await expect(exercises).toHaveCount(4); // Workout A has 4 exercises
+    await expect(exercises).toHaveCount(5); // Workout A has 5 exercises (1 warmup + 4 main)
 
-    // Check first exercise
+    // Check first exercise (warmup)
     const firstExercise = exercises.first();
-    await expect(firstExercise.locator('.exercise-name')).toContainText('Swedish Ladder Dead Hang');
+    await expect(firstExercise.locator('.exercise-name')).toContainText('Warmup');
     await expect(firstExercise.locator('.exercise-details')).toContainText('sets');
     await expect(firstExercise.locator('.exercise-details')).toContainText('reps');
   });
