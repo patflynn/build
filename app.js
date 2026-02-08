@@ -353,11 +353,13 @@ function bindEvents() {
       e.target.classList.add('selected');
 
       // Show/hide failed details
-      const failedDetails = container.closest('.feedback-content').querySelector('.failed-details');
-      if (difficulty === 'failed') {
-        failedDetails.classList.add('visible');
-      } else {
-        failedDetails.classList.remove('visible');
+      const failedDetails = document.querySelector(`.failed-details[data-key="${key}"]`);
+      if (failedDetails) {
+        if (difficulty === 'failed') {
+          failedDetails.classList.add('visible');
+        } else {
+          failedDetails.classList.remove('visible');
+        }
       }
 
       // Save to log
