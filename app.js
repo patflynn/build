@@ -164,6 +164,11 @@ function render() {
 
     // Build collapsible feedback section (difficulty + notes)
     const hasCustomFeedback = currentDifficulty && currentDifficulty !== 'good' || currentNotes;
+    const maxSets = ex.sets;
+    const maxReps = parseReps(ex.reps);
+    const failedSet = logEntry.failedSet || 1;
+    const failedRep = logEntry.failedRep || 1;
+
     const feedbackSection = `
       <div class="feedback-section${hasCustomFeedback ? ' expanded' : ''}">
         <button class="feedback-toggle" data-key="${exerciseKey}">
@@ -173,10 +178,20 @@ function render() {
           <div class="difficulty-input">
             <label>How was it?</label>
             <div class="difficulty-buttons">
-              <button class="difficulty-btn${currentDifficulty === 'failed' ? ' selected' : ''}" data-difficulty="failed" data-key="${exerciseKey}" data-exercise="${ex.name}">FAILED</button>
+              <button class="difficulty-btn${currentDifficulty === 'failed' ? ' selected' : ''}" data-difficulty="failed" data-key="${exerciseKey}" data-exercise="${ex.name}" data-sets="${maxSets}" data-reps="${maxReps}">FAILED</button>
               <button class="difficulty-btn${currentDifficulty === 'easy' ? ' selected' : ''}" data-difficulty="easy" data-key="${exerciseKey}" data-exercise="${ex.name}">EASY</button>
               <button class="difficulty-btn${currentDifficulty === 'good' || !currentDifficulty ? ' selected' : ''}" data-difficulty="good" data-key="${exerciseKey}" data-exercise="${ex.name}">GOOD</button>
               <button class="difficulty-btn${currentDifficulty === 'hard' ? ' selected' : ''}" data-difficulty="hard" data-key="${exerciseKey}" data-exercise="${ex.name}">HARD</button>
+            </div>
+          </div>
+          <div class="failed-details${currentDifficulty === 'failed' ? ' visible' : ''}" data-key="${exerciseKey}">
+            <div class="slider-group">
+              <label>Failed on set: <span class="slider-value">${failedSet}</span> / ${maxSets}</label>
+              <input type="range" class="failed-set-slider" data-key="${exerciseKey}" data-exercise="${ex.name}" min="1" max="${maxSets}" value="${failedSet}">
+            </div>
+            <div class="slider-group">
+              <label>Failed on rep: <span class="slider-value">${failedRep}</span> / ${maxReps}</label>
+              <input type="range" class="failed-rep-slider" data-key="${exerciseKey}" data-exercise="${ex.name}" min="1" max="${maxReps}" value="${failedRep}">
             </div>
           </div>
           <div class="notes-input">
@@ -203,6 +218,12 @@ function render() {
       </div>
     `;
   }).join('');
+}
+
+// Parse reps string to extract numeric value (e.g., "10/direction" -> 10)
+function parseReps(repsStr) {
+  const match = String(repsStr).match(/\d+/);
+  return match ? parseInt(match[0]) : 10;
 }
 
 // Get the last recorded weight for an exercise
@@ -331,8 +352,32 @@ function bindEvents() {
       container.querySelectorAll('.difficulty-btn').forEach(btn => btn.classList.remove('selected'));
       e.target.classList.add('selected');
 
+      // Show/hide failed details
+      const failedDetails = container.closest('.feedback-content').querySelector('.failed-details');
+      if (difficulty === 'failed') {
+        failedDetails.classList.add('visible');
+      } else {
+        failedDetails.classList.remove('visible');
+      }
+
       // Save to log
       saveDifficulty(key, exercise, difficulty);
+    }
+  });
+
+  // Failed sliders (delegated)
+  document.getElementById('exercises-list').addEventListener('input', (e) => {
+    if (e.target.classList.contains('failed-set-slider') || e.target.classList.contains('failed-rep-slider')) {
+      const slider = e.target;
+      const key = slider.dataset.key;
+      const exercise = slider.dataset.exercise;
+
+      // Update display value
+      const label = slider.previousElementSibling;
+      label.querySelector('.slider-value').textContent = slider.value;
+
+      // Save to log
+      saveFailedDetails(key, exercise);
     }
   });
 
@@ -391,6 +436,30 @@ function saveDifficulty(key, exercise, difficulty) {
     ...log[key],
     exercise: exercise,
     difficulty: difficulty,
+    day: currentState.globalDay,
+    timestamp: Date.now()
+  };
+
+  // Clear failed details if not failed
+  if (difficulty !== 'failed') {
+    delete log[key].failedSet;
+    delete log[key].failedRep;
+  }
+
+  saveLog(log);
+}
+
+// Save failed set/rep details to log
+function saveFailedDetails(key, exercise) {
+  const log = loadLog();
+  const setSlider = document.querySelector(`.failed-set-slider[data-key="${key}"]`);
+  const repSlider = document.querySelector(`.failed-rep-slider[data-key="${key}"]`);
+
+  log[key] = {
+    ...log[key],
+    exercise: exercise,
+    failedSet: parseInt(setSlider.value),
+    failedRep: parseInt(repSlider.value),
     day: currentState.globalDay,
     timestamp: Date.now()
   };

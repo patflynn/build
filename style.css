@@ -356,6 +356,72 @@ main {
   color: var(--bg-primary);
 }
 
+/* Failed Details */
+.failed-details {
+  display: none;
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(255, 68, 68, 0.1);
+  border: 1px solid var(--danger);
+  border-radius: 4px;
+}
+
+.failed-details.visible {
+  display: block;
+}
+
+.slider-group {
+  margin-bottom: 0.5rem;
+}
+
+.slider-group:last-child {
+  margin-bottom: 0;
+}
+
+.slider-group label {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.slider-value {
+  color: var(--danger);
+  font-weight: bold;
+}
+
+.failed-set-slider,
+.failed-rep-slider {
+  width: 100%;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border);
+  border-radius: 3px;
+  outline: none;
+}
+
+.failed-set-slider::-webkit-slider-thumb,
+.failed-rep-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background: var(--danger);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.failed-set-slider::-moz-range-thumb,
+.failed-rep-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: var(--danger);
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}
+
 /* Notes Input */
 .notes-input {
   margin-top: 0.75rem;
