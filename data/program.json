@@ -58,7 +58,10 @@
               "reps": "12/side",
               "rest": "90s",
               "video_id": "Z44y6AgV-TI",
-              "note": "Keep lower back flat. Use the 10lb DB if KB is too heavy initially."
+              "note": "Keep lower back flat. Use the 10lb DB if KB is too heavy initially.",
+              "uses_weight": true,
+              "starting_weight": 20,
+              "weight_increment": 5
             },
             {
               "name": "Kettlebell Swings",
@@ -67,7 +70,10 @@
               "rest": "90s",
               "video_id": "1cVT3ee9mgU",
               "video_start": 9,
-              "note": "Hinge only. Squeeze glutes at top. No lower back rounding."
+              "note": "Hinge only. Squeeze glutes at top. No lower back rounding.",
+              "uses_weight": true,
+              "starting_weight": 25,
+              "weight_increment": 5
             },
             {
               "name": "TRX Inverted Rows",
@@ -75,7 +81,8 @@
               "reps": "8-12",
               "rest": "90s",
               "video_id": "ypIQZWKMbkU",
-              "note": "Adjust strap length to change difficulty. Stop 1-2 reps before form breaks down."
+              "note": "Adjust strap length to change difficulty. Stop 1-2 reps before form breaks down.",
+              "uses_weight": false
             }
           ]
         },
@@ -97,7 +104,10 @@
               "reps": "12",
               "rest": "90s",
               "video_id": "tToWat96Rhk",
-              "note": "Elbows inside knees at bottom."
+              "note": "Elbows inside knees at bottom.",
+              "uses_weight": true,
+              "starting_weight": 20,
+              "weight_increment": 5
             },
             {
               "name": "Swedish Ladder Pushups",
