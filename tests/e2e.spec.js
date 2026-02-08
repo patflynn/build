@@ -116,6 +116,10 @@ test.describe('Basement Lab PWA', () => {
   });
 
   test('has dark theme colors', async ({ page }) => {
+    // Ensure dark theme for this test
+    await page.evaluate(() => localStorage.setItem('basement_lab_theme', 'dark'));
+    await page.reload();
+
     const body = page.locator('body');
     const bgColor = await body.evaluate(el =>
       getComputedStyle(el).backgroundColor
@@ -237,5 +241,60 @@ test.describe('Basement Lab PWA', () => {
     const hardBtn = page.locator('.difficulty-buttons').first().locator('[data-difficulty="hard"]');
     await expect(hardBtn).toHaveClass(/selected/);
     await expect(page.locator('.notes-field').first()).toHaveValue('Test note');
+  });
+
+  test('theme toggle switches between light and dark', async ({ page }) => {
+    // Start in dark mode
+    await page.evaluate(() => localStorage.setItem('basement_lab_theme', 'dark'));
+    await page.reload();
+
+    const html = page.locator('html');
+    const toggleBtn = page.locator('#theme-toggle');
+
+    // Should be in dark mode
+    await expect(html).toHaveAttribute('data-theme', 'dark');
+    await expect(toggleBtn).toContainText('☀');
+
+    // Click to switch to light
+    await toggleBtn.click();
+    await expect(html).toHaveAttribute('data-theme', 'light');
+    await expect(toggleBtn).toContainText('☾');
+
+    // Click to switch back to dark
+    await toggleBtn.click();
+    await expect(html).toHaveAttribute('data-theme', 'dark');
+    await expect(toggleBtn).toContainText('☀');
+  });
+
+  test('theme persists after reload', async ({ page }) => {
+    // Start in dark mode
+    await page.evaluate(() => localStorage.setItem('basement_lab_theme', 'dark'));
+    await page.reload();
+
+    const html = page.locator('html');
+    const toggleBtn = page.locator('#theme-toggle');
+
+    // Switch to light mode
+    await toggleBtn.click();
+    await expect(html).toHaveAttribute('data-theme', 'light');
+
+    // Reload
+    await page.reload();
+
+    // Should still be light mode
+    await expect(html).toHaveAttribute('data-theme', 'light');
+    await expect(toggleBtn).toContainText('☾');
+  });
+
+  test('theme respects system preference on first load', async ({ page, context }) => {
+    // Clear localStorage to simulate first visit
+    await page.evaluate(() => localStorage.removeItem('basement_lab_theme'));
+
+    // Create a new page with light color scheme preference
+    await page.emulateMedia({ colorScheme: 'light' });
+    await page.reload();
+
+    const html = page.locator('html');
+    await expect(html).toHaveAttribute('data-theme', 'light');
   });
 });

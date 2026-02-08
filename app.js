@@ -5,6 +5,7 @@
 
 const STATE_KEY = 'basement_lab_state';
 const LOG_KEY = 'basement_lab_log';
+const THEME_KEY = 'basement_lab_theme';
 
 let programData = null;
 let currentState = null;
@@ -12,9 +13,42 @@ let currentState = null;
 // Initialize app
 async function init() {
   loadState();
+  initTheme();
   await loadProgram();
   render();
   bindEvents();
+}
+
+// Initialize theme from localStorage or system preference
+function initTheme() {
+  const saved = localStorage.getItem(THEME_KEY);
+  const theme = saved || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+  setTheme(theme);
+}
+
+// Set theme and update UI
+function setTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem(THEME_KEY, theme);
+
+  // Update toggle button icon
+  const toggleBtn = document.getElementById('theme-toggle');
+  if (toggleBtn) {
+    toggleBtn.textContent = theme === 'light' ? '☾' : '☀';
+  }
+
+  // Update meta theme-color
+  const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+  if (metaThemeColor) {
+    metaThemeColor.setAttribute('content', theme === 'light' ? '#f5f5f5' : '#0a0a0a');
+  }
+}
+
+// Toggle between light and dark themes
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') || 'dark';
+  const newTheme = current === 'dark' ? 'light' : 'dark';
+  setTheme(newTheme);
 }
 
 // Load state from localStorage
@@ -299,6 +333,9 @@ function decrementWeight(exerciseKey, increment = 5) {
 
 // Bind event listeners
 function bindEvents() {
+  // Theme toggle button
+  document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+
   // Complete & Advance button
   document.getElementById('complete-btn').addEventListener('click', completeWorkout);
 

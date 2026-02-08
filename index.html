@@ -8,6 +8,13 @@
 
   <title>Basement Lab</title>
 
+  <script>
+    (function() {
+      var theme = localStorage.getItem('basement_lab_theme') ||
+        (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==">
@@ -16,6 +23,7 @@
   <header>
     <h1>BASEMENT LAB</h1>
     <div id="day-counter">DAY <span id="current-day">1</span>/365</div>
+    <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">☀</button>
   </header>
 
   <main id="app">
