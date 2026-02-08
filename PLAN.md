@@ -15,6 +15,35 @@
 
 ---
 
+## Program Philosophy
+
+These principles are **mandatory** for all workout programs in this app:
+
+### 1. Injury Prevention First
+- Every exercise selection must prioritize joint health and safe movement patterns
+- Exercises should be chosen for their low injury risk while maintaining effectiveness
+- Form and technique take precedence over load or volume
+- Programs must account for user's injury history (e.g., back issues, shoulder pain)
+
+### 2. Mobility & Flexibility as Foundation
+- Every phase must include dedicated mobility work (not optional)
+- Dynamic warmups before strength work, static stretching post-workout
+- Hip, shoulder, and thoracic spine mobility are non-negotiable components
+- Active recovery days should focus on mobility and movement quality
+
+### 3. Progressive, Not Aggressive
+- Tendon and ligament adaptation takes longer than muscle—program accordingly
+- Build structural integrity before chasing heavy loads
+- Include deload weeks and recovery protocols
+- Listen to the body: pain is a signal, not an obstacle to push through
+
+### 4. Longevity Over Short-Term Gains
+- This is a 47-year-old training to be fit for life, not a 22-year-old peaking for a competition
+- Sustainable habits beat aggressive periodization
+- Recovery quality matters as much as training stimulus
+
+---
+
 ## File Structure
 
 ```
