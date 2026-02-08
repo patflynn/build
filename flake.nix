@@ -16,6 +16,7 @@
           buildInputs = with pkgs; [
             nodejs_20
             nodePackages.serve
+            imagemagick
           ];
 
           shellHook = ''
