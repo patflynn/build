@@ -36,9 +36,8 @@ jobs:
 
       - name: Run Playwright tests
         run: |
-          nix develop -c bash -c "
-            npx playwright install --with-deps chromium
-            npx playwright test
+          nix develop .#test -c bash -c "
+            npx playwright test --project=chromium
           "
 
       - name: Upload test artifacts

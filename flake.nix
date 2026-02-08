@@ -16,17 +16,28 @@
           buildInputs = with pkgs; [
             nodejs_20
             nodePackages.serve
+          ];
+
+          shellHook = ''
+            echo "Basement Lab dev shell"
+            echo "Commands:"
+            echo "  serve .             - Start local server"
+            echo "  node tests/validate.js  - Run validation"
+          '';
+        };
+
+        # Separate shell for E2E tests with Playwright
+        devShells.test = pkgs.mkShell {
+          buildInputs = with pkgs; [
+            nodejs_20
+            nodePackages.serve
             playwright-driver.browsers
           ];
 
           shellHook = ''
             export PLAYWRIGHT_BROWSERS_PATH=${pkgs.playwright-driver.browsers}
-            export PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=true
-            echo "Basement Lab dev shell"
-            echo "Commands:"
-            echo "  serve        - Start local server"
-            echo "  npm test     - Run Playwright tests"
-            echo "  npm run validate - Run validation"
+            export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+            echo "Basement Lab test shell (with Playwright)"
           '';
         };
 
