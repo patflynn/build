@@ -34,11 +34,11 @@ jobs:
       - name: Setup Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
 
+      - name: Install npm dependencies
+        run: nix develop .#test -c npm ci
+
       - name: Run Playwright tests
-        run: |
-          nix develop .#test -c bash -c "
-            npx playwright test --project=chromium
-          "
+        run: nix develop .#test -c npx playwright test --project=chromium
 
       - name: Upload test artifacts
         uses: actions/upload-artifact@v4
