@@ -121,7 +121,7 @@ function render() {
       <div class="exercise" data-index="${index}">
         <div class="exercise-header">
           <span class="exercise-name">${ex.name}</span>
-          ${ex.video_id ? `<button class="video-btn" data-video="${ex.video_id}">VIDEO</button>` : '<button class="video-btn" disabled>NO VIDEO</button>'}
+          ${ex.video_id ? `<button class="video-btn" data-video="${ex.video_id}" data-start="${ex.video_start || 0}">VIDEO</button>` : '<button class="video-btn" disabled>NO VIDEO</button>'}
         </div>
         <div class="exercise-details">
           <span><strong>${ex.sets}</strong> sets</span>
@@ -171,7 +171,7 @@ function bindEvents() {
   // Video buttons (delegated)
   document.getElementById('exercises-list').addEventListener('click', (e) => {
     if (e.target.classList.contains('video-btn') && !e.target.disabled) {
-      openVideo(e.target.dataset.video);
+      openVideo(e.target.dataset.video, e.target.dataset.start);
     }
   });
 
@@ -249,13 +249,15 @@ function resetProgress() {
 }
 
 // Open video modal
-function openVideo(videoId) {
+function openVideo(videoId, startTime) {
   const modal = document.getElementById('video-modal');
   const container = document.getElementById('video-container');
+  const start = parseInt(startTime) || 0;
+  const startParam = start > 0 ? `&start=${start}` : '';
 
   container.innerHTML = `
     <iframe
-      src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0"
+      src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0${startParam}"
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
       allowfullscreen>
     </iframe>
