@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta name="description" content="Basement Lab - 12 Month Transformation Tracker">
+
+  <title>Basement Lab</title>
+
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==">
+</head>
+<body>
+  <header>
+    <h1>BASEMENT LAB</h1>
+    <div id="day-counter">DAY <span id="current-day">1</span>/365</div>
+  </header>
+
+  <main id="app">
+    <section id="workout-card" class="card">
+      <div id="workout-header">
+        <h2 id="workout-name">Loading...</h2>
+        <p id="workout-focus"></p>
+      </div>
+
+      <div id="exercises-list"></div>
+    </section>
+
+    <section id="rest-day" class="card hidden">
+      <h2>REST DAY</h2>
+      <p>Recovery is growth. Stay hydrated.</p>
+    </section>
+  </main>
+
+  <footer>
+    <button id="complete-btn" class="btn-primary">COMPLETE & ADVANCE</button>
+    <button id="reset-btn" class="btn-secondary">Reset</button>
+  </footer>
+
+  <!-- Video Modal -->
+  <div id="video-modal" class="modal hidden">
+    <div class="modal-content">
+      <button id="close-modal" class="close-btn">&times;</button>
+      <div id="video-container"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
