@@ -94,6 +94,76 @@ function validateProgramJson() {
   success(`Validated ${program.phases.length} phase(s)`);
 }
 
+// Validate program principles (injury prevention, mobility requirements)
+function validatePrinciples() {
+  console.log('\n🛡️ Validating program principles...\n');
+
+  const programPath = path.join(ROOT, 'data', 'program.json');
+  let program;
+
+  try {
+    program = JSON.parse(fs.readFileSync(programPath, 'utf-8'));
+  } catch (e) {
+    error('Cannot validate principles: program.json parse failed');
+    return;
+  }
+
+  // Check required principles in meta
+  const requiredPrinciples = [
+    'injury_prevention',
+    'mobility_every_phase',
+    'form_over_load',
+    'longevity_focus'
+  ];
+
+  if (!program.meta.principles) {
+    error('Missing meta.principles array');
+  } else {
+    const missing = requiredPrinciples.filter(p => !program.meta.principles.includes(p));
+    if (missing.length > 0) {
+      error(`Missing required principles: ${missing.join(', ')}`);
+    } else {
+      success('All required principles declared');
+    }
+  }
+
+  // Check constraints
+  if (!program.meta.constraints) {
+    error('Missing meta.constraints object');
+  } else {
+    if (!program.meta.constraints.mobility_required) {
+      error('meta.constraints.mobility_required must be true');
+    }
+    if (typeof program.meta.constraints.min_mobility_days_per_week !== 'number' ||
+        program.meta.constraints.min_mobility_days_per_week < 1) {
+      error('meta.constraints.min_mobility_days_per_week must be at least 1');
+    } else {
+      success('Mobility constraints configured');
+    }
+  }
+
+  // Check each phase has mobility-focused workout
+  const mobilityKeywords = ['mobility', 'flexibility', 'recovery', 'stretch', 'flow'];
+
+  program.phases.forEach((phase, i) => {
+    if (!phase.workouts || Object.keys(phase.workouts).length === 0) {
+      // Skip placeholder phases
+      return;
+    }
+
+    const workoutNames = Object.values(phase.workouts).map(w => w.name.toLowerCase());
+    const hasMobility = workoutNames.some(name =>
+      mobilityKeywords.some(keyword => name.includes(keyword))
+    );
+
+    if (!hasMobility) {
+      error(`phases[${i}] (${phase.name}): No mobility-focused workout found`);
+    } else {
+      success(`phases[${i}] includes mobility work`);
+    }
+  });
+}
+
 // Check required files exist
 function validateFileStructure() {
   console.log('\n📁 Validating file structure...\n');
@@ -145,6 +215,7 @@ console.log('='.repeat(40));
 
 validateFileStructure();
 validateProgramJson();
+validatePrinciples();
 validateSyntax();
 
 console.log('\n' + '='.repeat(40));
