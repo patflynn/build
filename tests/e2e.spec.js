@@ -132,27 +132,31 @@ test.describe('Basement Lab PWA', () => {
     expect(bgColor).toMatch(/rgb\(\s*10,\s*10,\s*10\s*\)/);
   });
 
-  test('feedback toggle expands and collapses feedback section', async ({ page }) => {
-    const feedbackToggle = page.locator('.feedback-toggle').first();
+  test('done button marks exercise complete and expands feedback', async ({ page }) => {
+    const doneBtn = page.locator('.done-btn').first();
     const feedbackContent = page.locator('.feedback-content').first();
+    const exerciseCard = page.locator('.exercise').first();
 
-    // Initially collapsed
+    // Initially collapsed and not completed
     await expect(feedbackContent).toBeHidden();
+    await expect(doneBtn).toContainText('DONE');
 
-    // Click to expand
-    await feedbackToggle.click();
+    // Click DONE to complete and expand feedback
+    await doneBtn.click();
     await expect(feedbackContent).toBeVisible();
-    await expect(feedbackToggle).toContainText('Hide feedback');
+    await expect(doneBtn).toContainText(/✓ DONE/);
+    await expect(exerciseCard).toHaveClass(/completed/);
 
-    // Click to collapse
-    await feedbackToggle.click();
+    // Click again to undo completion
+    await doneBtn.click();
     await expect(feedbackContent).toBeHidden();
-    await expect(feedbackToggle).toContainText('Add feedback');
+    await expect(exerciseCard).not.toHaveClass(/completed/);
+    await expect(doneBtn).not.toContainText(/✓/);
   });
 
   test('difficulty buttons can be selected', async ({ page }) => {
-    // Expand feedback section
-    await page.locator('.feedback-toggle').first().click();
+    // Mark exercise done to expand feedback section
+    await page.locator('.done-btn').first().click();
 
     const difficultyButtons = page.locator('.difficulty-buttons').first();
     const hardBtn = difficultyButtons.locator('[data-difficulty="hard"]');
@@ -168,8 +172,8 @@ test.describe('Basement Lab PWA', () => {
   });
 
   test('difficulty saves to localStorage', async ({ page }) => {
-    // Expand feedback section
-    await page.locator('.feedback-toggle').first().click();
+    // Mark exercise done to expand feedback section
+    await page.locator('.done-btn').first().click();
 
     // Select hard difficulty
     await page.locator('.difficulty-buttons').first().locator('[data-difficulty="hard"]').click();
@@ -180,8 +184,8 @@ test.describe('Basement Lab PWA', () => {
   });
 
   test('failed button shows set/rep sliders', async ({ page }) => {
-    // Expand feedback section
-    await page.locator('.feedback-toggle').first().click();
+    // Mark exercise done to expand feedback section
+    await page.locator('.done-btn').first().click();
 
     const failedDetails = page.locator('.failed-details').first();
 
@@ -198,8 +202,8 @@ test.describe('Basement Lab PWA', () => {
   });
 
   test('failed sliders save to localStorage', async ({ page }) => {
-    // Expand feedback and select failed
-    await page.locator('.feedback-toggle').first().click();
+    // Mark exercise done and select failed
+    await page.locator('.done-btn').first().click();
     await page.locator('.difficulty-buttons').first().locator('[data-difficulty="failed"]').click();
 
     // Adjust sliders
@@ -216,8 +220,8 @@ test.describe('Basement Lab PWA', () => {
   });
 
   test('notes textarea saves to localStorage', async ({ page }) => {
-    // Expand feedback section
-    await page.locator('.feedback-toggle').first().click();
+    // Mark exercise done to expand feedback section
+    await page.locator('.done-btn').first().click();
 
     const notesField = page.locator('.notes-field').first();
     await notesField.fill('Felt strong today');
@@ -228,13 +232,17 @@ test.describe('Basement Lab PWA', () => {
   });
 
   test('feedback persists after reload', async ({ page }) => {
-    // Expand feedback and set values
-    await page.locator('.feedback-toggle').first().click();
+    // Mark exercise done and set feedback values
+    await page.locator('.done-btn').first().click();
     await page.locator('.difficulty-buttons').first().locator('[data-difficulty="hard"]').click();
     await page.locator('.notes-field').first().fill('Test note');
 
     // Reload
     await page.reload();
+
+    // Exercise should still be completed
+    const exerciseCard = page.locator('.exercise').first();
+    await expect(exerciseCard).toHaveClass(/completed/);
 
     // Feedback section should be expanded (has custom feedback)
     const feedbackContent = page.locator('.feedback-content').first();
