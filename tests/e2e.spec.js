@@ -147,10 +147,11 @@ test.describe('Basement Lab PWA', () => {
     await expect(doneBtn).toContainText(/✓ DONE/);
     await expect(exerciseCard).toHaveClass(/completed/);
 
-    // Click again to collapse feedback (stays completed)
+    // Click again to undo completion
     await doneBtn.click();
     await expect(feedbackContent).toBeHidden();
-    await expect(exerciseCard).toHaveClass(/completed/);
+    await expect(exerciseCard).not.toHaveClass(/completed/);
+    await expect(doneBtn).not.toContainText(/✓/);
   });
 
   test('difficulty buttons can be selected', async ({ page }) => {

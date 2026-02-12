@@ -423,6 +423,9 @@ function bindEvents() {
     });
   });
 
+  // Back button
+  document.getElementById('back-btn').addEventListener('click', goBack);
+
   // Complete & Advance button
   document.getElementById('complete-btn').addEventListener('click', completeWorkout);
 
@@ -540,8 +543,16 @@ function bindEvents() {
         exerciseCard.classList.add('completed');
         section.classList.add('expanded');
       } else {
-        // Already completed - toggle feedback visibility
-        section.classList.toggle('expanded');
+        // Undo completion
+        delete log[key].completed;
+        // If no meaningful data left, remove the entry
+        if (!log[key].weight && !log[key].difficulty && !log[key].notes) {
+          delete log[key];
+        }
+        btn.classList.remove('is-done');
+        btn.innerHTML = 'DONE';
+        exerciseCard.classList.remove('completed');
+        section.classList.remove('expanded');
       }
 
       saveLog(log);
@@ -670,6 +681,30 @@ function completeWorkout() {
   render();
 
   // Scroll to top
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Go back one day
+function goBack() {
+  if (currentState.globalDay <= 1) return;
+
+  currentState.globalDay--;
+
+  // Check for phase transition in reverse
+  const phase = getCurrentPhase();
+  if (phase) {
+    const currentIndex = programData.phases.findIndex(p => p.id === currentState.currentPhase);
+    if (currentIndex > 0) {
+      const prevPhase = programData.phases[currentIndex - 1];
+      const prevPhaseDays = prevPhase.duration_weeks * 7;
+      if (currentState.globalDay <= prevPhaseDays) {
+        currentState.currentPhase = prevPhase.id;
+      }
+    }
+  }
+
+  saveState();
+  render();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
