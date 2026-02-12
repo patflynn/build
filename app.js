@@ -169,8 +169,11 @@ function render() {
     // Rest day
     workoutCard.classList.add('hidden');
     restDay.classList.remove('hidden');
+    document.getElementById('session-progress').style.display = 'none';
     return;
   }
+
+  document.getElementById('session-progress').style.display = '';
 
   // Workout day
   workoutCard.classList.remove('hidden');
@@ -233,6 +236,7 @@ function render() {
     }
 
     // Build collapsible feedback section (difficulty + notes)
+    const isCompleted = logEntry.completed || false;
     const hasCustomFeedback = currentDifficulty && currentDifficulty !== 'good' || currentNotes;
     const maxSets = ex.sets;
     const maxReps = parseReps(ex.reps);
@@ -240,9 +244,9 @@ function render() {
     const failedRep = logEntry.failedRep || 1;
 
     const feedbackSection = `
-      <div class="feedback-section${hasCustomFeedback ? ' expanded' : ''}">
-        <button class="feedback-toggle" data-key="${exerciseKey}">
-          <span class="feedback-toggle-text">${hasCustomFeedback ? 'Hide feedback' : 'Add feedback'}</span>
+      <div class="feedback-section${isCompleted && hasCustomFeedback ? ' expanded' : ''}">
+        <button class="done-btn${isCompleted ? ' is-done' : ''}" data-key="${exerciseKey}" data-exercise="${ex.name}" data-index="${index}">
+          ${isCompleted ? '\u2713 DONE' : 'DONE'}
         </button>
         <div class="feedback-content">
           <div class="difficulty-input">
@@ -272,7 +276,7 @@ function render() {
     `;
 
     return `
-      <div class="exercise" data-index="${index}">
+      <div class="exercise${isCompleted ? ' completed' : ''}" data-index="${index}">
         <div class="exercise-header">
           <span class="exercise-name">${ex.name}</span>
           ${ex.video_id ? `<button class="video-btn" data-video="${ex.video_id}" data-start="${ex.video_start || 0}">VIDEO</button>` : '<button class="video-btn" disabled>NO VIDEO</button>'}
@@ -288,6 +292,32 @@ function render() {
       </div>
     `;
   }).join('');
+
+  updateProgressBar();
+}
+
+// Update session progress bar
+function updateProgressBar() {
+  const workout = getTodaysWorkout();
+  const bar = document.getElementById('session-progress-bar');
+  if (!workout || !bar) {
+    if (bar) bar.style.width = '0%';
+    return;
+  }
+
+  const log = loadLog();
+  const total = workout.exercises.length;
+  let completed = 0;
+
+  workout.exercises.forEach((ex, index) => {
+    const key = `${currentState.globalDay}_${index}`;
+    if (log[key] && log[key].completed) {
+      completed++;
+    }
+  });
+
+  const percent = total > 0 ? (completed / total) * 100 : 0;
+  bar.style.width = `${percent}%`;
 }
 
 // Parse reps string to extract numeric value (e.g., "10/direction" -> 10)
@@ -484,15 +514,38 @@ function bindEvents() {
     }
   });
 
-  // Feedback toggle (delegated)
+  // Done button (delegated)
   document.getElementById('exercises-list').addEventListener('click', (e) => {
-    if (e.target.classList.contains('feedback-toggle') || e.target.classList.contains('feedback-toggle-text')) {
-      const toggle = e.target.closest('.feedback-toggle');
-      const section = toggle.closest('.feedback-section');
-      const text = toggle.querySelector('.feedback-toggle-text');
+    if (e.target.classList.contains('done-btn')) {
+      const btn = e.target;
+      const key = btn.dataset.key;
+      const exercise = btn.dataset.exercise;
+      const exerciseCard = btn.closest('.exercise');
+      const section = btn.closest('.feedback-section');
+      const log = loadLog();
 
-      section.classList.toggle('expanded');
-      text.textContent = section.classList.contains('expanded') ? 'Hide feedback' : 'Add feedback';
+      const wasCompleted = log[key] && log[key].completed;
+
+      if (!wasCompleted) {
+        // Mark as completed, expand feedback
+        log[key] = {
+          ...log[key],
+          exercise: exercise,
+          completed: true,
+          day: currentState.globalDay,
+          timestamp: Date.now()
+        };
+        btn.classList.add('is-done');
+        btn.innerHTML = '\u2713 DONE';
+        exerciseCard.classList.add('completed');
+        section.classList.add('expanded');
+      } else {
+        // Already completed - toggle feedback visibility
+        section.classList.toggle('expanded');
+      }
+
+      saveLog(log);
+      updateProgressBar();
     }
   });
 }
