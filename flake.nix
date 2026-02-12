@@ -38,7 +38,7 @@
           shellHook = ''
             export PLAYWRIGHT_BROWSERS_PATH=${pkgs.playwright-driver.browsers}
             export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
-            npm install --prefer-offline --no-audit --no-fund 2>/dev/null
+            npm install --prefer-offline --no-audit --no-fund --quiet 2>/dev/null
             echo "Basement Lab test shell (with Playwright)"
           '';
         };
